@@ -1,0 +1,7 @@
+ragas
+openai
+python-dotenv
+langchain
+pypdf
+qdrant-client
+tiktoken
