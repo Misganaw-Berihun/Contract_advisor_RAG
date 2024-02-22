@@ -1,3 +1,5 @@
 .env
-/data/
-/local_qdrant/
+/data 
+/node_modules
+/new_embeding
+/local_qdrant
