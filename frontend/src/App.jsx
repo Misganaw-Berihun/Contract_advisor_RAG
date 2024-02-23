@@ -99,62 +99,6 @@ function App() {
     }
   };
 
-  // const handleSendMessage = async () => {
-
-  //     const config = {
-  //       headers: {
-  //         "Content-Type": "multipart/form-data",
-  //       },
-  //     };
-
-  //     const formData = new FormData();
-
-  //     const readFileAndAppend = (file, index) => {
-  //       const reader = new FileReader();
-
-  //       reader.onload = (event) => {
-  //         const fileContent = event.target.result;
-  //         formData.append(
-  //           `files`,
-  //           new Blob([fileContent], { type: file.type }),
-  //           file.name
-  //         );
-
-  //         if (index === uploadedFiles.length - 1) {
-  //           console.log(formData);
-  //         }
-  //       };
-
-  //       reader.readAsArrayBuffer(file);
-  //     };
-
-  //     uploadedFiles.forEach((file, index) => {
-  //       readFileAndAppend(file, index);
-  //     });
-
-  //     console.log(formData.entries());
-  //     const chatbotResponse = {
-  //       message: ``,
-  //       isUserQuestion: false,
-  //     };
-
-  //     try {
-  //       const response = await axios.post("http://localhost:5000/api/chat", {
-  //         user_question: newMessage,
-  //         uploadedFiles: formData,
-  //         config,
-  //       });
-
-  //       chatbotResponse.messasge = response.data.response;
-  //     } catch (error) {
-  //       console.error("Error sending message:", error);
-  //     }
-
-  //     setMessages([...messages, newUserQuestion, chatbotResponse]);
-  //     setNewMessage("");
-  //   }
-  // };
-
   const handleFileUpload = (files) => {
     setUploadedFiles([...uploadedFiles, ...files]);
   };
