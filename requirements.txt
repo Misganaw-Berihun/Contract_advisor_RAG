@@ -5,3 +5,6 @@ langchain
 pypdf
 qdrant-client
 tiktoken
+flask
+axios
+cors
