@@ -1,8 +1,9 @@
 import logging
-import os 
+import os, sys
 import tempfile
 
 from langchain.chains import ConversationalRetrievalChain
+from langchain.chat_models import ChatOpenAI
 from langchain.chains.base import Chain
 from langchain.document_loaders import TextLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -10,6 +11,10 @@ from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import Qdrant
 from langchain.schema import BaseRetriever, Document
 from dotenv import load_dotenv
+
+rpath = os.path.abspath('..')
+if rpath not in sys.path:
+    sys.path.insert(0, rpath)
 
 from scripts.utils import MEMORY, load_document
 logging.basicConfig(encoding="utf-8", level=logging.INFO)
@@ -24,7 +29,7 @@ LLM = ChatOpenAI(
 
 def configure_retriever(
     docs: list[Document]
-) -> BaseRetriver:
+) -> BaseRetriever:
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1500, chunk_overlap=200)
     splits = text_splitter.split_documents(docs)
 
@@ -41,8 +46,8 @@ def configure_retriever(
     retriever = vectordb.as_retriever (
         search_type = "mmr", search_kwargs={
             "k": 5,
-            "fetch_k": 7,
-            "include_metadata": True
+            "fetch_k": 7
+            # "include_metadata": True
         },
     )
 
@@ -51,7 +56,7 @@ def configure_retriever(
 def configure_chain(retriever: BaseRetriever) -> Chain:
     params = dict(
         llm=LLM,
-        retriever=retriver,
+        retriever=retriever,
         memory=MEMORY,
         verbose=True,
         max_tokens_limit=4000,
@@ -62,9 +67,18 @@ def configure_chain(retriever: BaseRetriever) -> Chain:
     )
 
 def configure_retrieval_chain(
-    docs
+    uploaded_files
 ) -> Chain:
      
-     retriever = configure_retriever(docs=docs)
-     chain = configure_chain(retriever=retriever)
-     return chain
+    docs = []
+    temp_dir = tempfile.TemporaryDirectory()
+    for file in uploaded_files:
+        temp_filepath = os.path.join(temp_dir.name, file.filename)
+        # with open(temp_filepath, "wb") as f:
+        #     f.write(file.getvalue())
+        file.save(temp_filepath)
+        docs.extend(load_document(temp_filepath))
+
+    retriever = configure_retriever(docs=docs)
+    chain = configure_chain(retriever=retriever)
+    return chain

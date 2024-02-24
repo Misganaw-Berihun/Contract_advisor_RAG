@@ -1,26 +1,39 @@
 import { useState } from "react";
+import React from "react";
 import Dropzone from "react-dropzone";
 import "./App.css";
 import Navbar from "./components/nav-bar";
 import axios from "axios";
 import { memo } from "react";
 
-const ChatMessage = ({ message, isUserQuestion }) => (
-  <div
-    className={`message-container ${
-      isUserQuestion ? "user-question" : "chatbot-answer"
-    }`}
-  >
+const getCurrentTime = () => {
+  const currentDate = new Date();
+
+  return currentDate.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "numeric",
+    second: "numeric",
+  });
+};
+
+const ChatMessage = ({ message, isUserQuestion, messageTime }) => {
+  return (
     <div
-      className={`message ${
-        isUserQuestion ? "text-left user-text" : "text-right chatbot-text"
+      className={`message-container ${
+        isUserQuestion ? "user-question" : "chatbot-answer"
       }`}
     >
-      <p className="message-text">{message}</p>
-      <small className="text-body-secondary">Just now</small>
+      <div
+        className={`message ${
+          isUserQuestion ? "text-left user-text" : "text-right chatbot-text"
+        }`}
+      >
+        <p className="message-text">{message}</p>
+        <small className="text-body-secondary">{messageTime}</small>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const Sidebar = ({ onFileUpload, uploadedFiles, onRemoveFile }) => (
   <div className="sidebar">
@@ -53,7 +66,7 @@ function App() {
   const [newMessage, setNewMessage] = useState("");
   const [messages, setMessages] = useState([
     {
-      message: "Hello! This is a chatbot.",
+      message: "Hello! This is a Contract advisor.",
       isUserQuestion: false,
     },
   ]);
@@ -68,6 +81,7 @@ function App() {
       const newUserQuestion = {
         message: newMessage,
         isUserQuestion: true,
+        messageTime: getCurrentTime(),
       };
 
       const formData = new FormData();
@@ -77,25 +91,28 @@ function App() {
         formData.append(`files`, file);
       });
 
-      const chatbotResponse = {
-        message: ``,
+      let chatbotResponse = {
+        message: "",
         isUserQuestion: false,
+        messageTime: getCurrentTime(),
       };
 
+      setMessages([...messages, newUserQuestion]);
       try {
         const response = await axios.post(
           "http://localhost:5000/api/chat",
           formData
         );
 
-        chatbotResponse.messasge = response.data.response;
+        chatbotResponse.message = response.data.response;
+        console.log("message:", chatbotResponse.message);
+        console.log("Response: ", response.data.response);
+        setMessages([...messages, newUserQuestion, chatbotResponse]);
       } catch (error) {
         console.error("Error sending message:", error);
       }
 
-      setMessages([...messages, newUserQuestion, chatbotResponse]);
       setNewMessage("");
-      setUploadedFiles([]);
     }
   };
 
