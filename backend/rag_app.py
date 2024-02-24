@@ -3,12 +3,14 @@ import os, sys
 import tempfile
 
 from langchain.chains import ConversationalRetrievalChain
+from langchain.retrievers.document_compressors import EmbeddingsFilter
 from langchain.chat_models import ChatOpenAI
 from langchain.chains.base import Chain
 from langchain.document_loaders import TextLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import Qdrant
+from langchain.retrievers import ContextualCompressionRetriever
 from langchain.schema import BaseRetriever, Document
 from dotenv import load_dotenv
 
@@ -47,11 +49,18 @@ def configure_retriever(
         search_type = "mmr", search_kwargs={
             "k": 5,
             "fetch_k": 7
-            # "include_metadata": True
         },
     )
 
-    return retriever
+    embeddings_filter = EmbeddingsFilter(
+        embeddings=embeddings, similarity_threshold=0.76
+    )
+    return ContextualCompressionRetriever(
+        base_compressor=embeddings_filter,
+        base_retriever=retriever,
+    )
+
+    # return retriever
 
 def configure_chain(retriever: BaseRetriever) -> Chain:
     params = dict(
@@ -60,6 +69,7 @@ def configure_chain(retriever: BaseRetriever) -> Chain:
         memory=MEMORY,
         verbose=True,
         max_tokens_limit=4000,
+        return_source_documents=True
     )
 
     return ConversationalRetrievalChain.from_llm(
@@ -69,13 +79,12 @@ def configure_chain(retriever: BaseRetriever) -> Chain:
 def configure_retrieval_chain(
     uploaded_files
 ) -> Chain:
+    print("uploaded Files: ", uploaded_files)
      
     docs = []
     temp_dir = tempfile.TemporaryDirectory()
     for file in uploaded_files:
         temp_filepath = os.path.join(temp_dir.name, file.filename)
-        # with open(temp_filepath, "wb") as f:
-        #     f.write(file.getvalue())
         file.save(temp_filepath)
         docs.extend(load_document(temp_filepath))
 

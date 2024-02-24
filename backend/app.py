@@ -8,7 +8,6 @@ if rpath not in sys.path:
     sys.path.insert(0, rpath)
 
 from scripts.utils import MEMORY, load_data, load_qna_data
-from evaluate import evaluate_chain, evaluate_metrics, create_dataframe
 
 app = Flask(__name__)
 CORS(app)
