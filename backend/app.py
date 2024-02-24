@@ -32,10 +32,10 @@ def chat():
     )
     
     response = CONV_CHAIN.run({
-        "question": user_query,
+        "question": user_question,
         "chat_history": MEMORY.chat_memory.messages
     })
-
+    print("Response:", response)
     return jsonify({"response": response})
 
 
